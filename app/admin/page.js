@@ -15,6 +15,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState('items')
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [copiedId, setCopiedId] = useState(null)
 
   useEffect(() => {
     if (!authLoading) {
@@ -66,8 +67,64 @@ export default function AdminPage() {
   }
 
   async function setApproval(userId, approved) {
-    await supabase.from('profiles').update({ approved }).eq('id', userId)
-    setUsers(prev => prev.map(u => u.id === userId ? { ...u, approved } : u))
+    console.log('[setApproval] userId:', userId, 'approved:', approved)
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ approved, rejected: false })
+      .eq('id', userId)
+      .select()
+    console.log('[setApproval] result data:', data, 'error:', error)
+    if (error) {
+      alert(`Update failed: ${error.message} (code: ${error.code})`)
+      return
+    }
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, approved, rejected: false } : u))
+  }
+
+  async function rejectUser(userId) {
+    console.log('[rejectUser] userId:', userId)
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ approved: false, rejected: true })
+      .eq('id', userId)
+      .select()
+    console.log('[rejectUser] result data:', data, 'error:', error)
+    if (error) {
+      alert(`Update failed: ${error.message} (code: ${error.code})`)
+      return
+    }
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, approved: false, rejected: true } : u))
+  }
+
+  async function deleteUser(userId) {
+    if (!confirm('Are you sure? This will delete the user and all their items.')) return
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/admin/delete-user', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ userId }),
+    })
+    if (res.ok) {
+      setUsers(prev => prev.filter(u => u.id !== userId))
+    } else {
+      const { error } = await res.json()
+      alert(`Failed to delete user: ${error}`)
+    }
+  }
+
+  async function copyCode(id, code) {
+    await navigator.clipboard.writeText(code)
+    setCopiedId(id)
+    setTimeout(() => setCopiedId(null), 2000)
+  }
+
+  async function deleteCode(id) {
+    if (!confirm('Delete this invite code?')) return
+    await supabase.from('invite_codes').delete().eq('id', id)
+    setCodes(prev => prev.filter(c => c.id !== id))
   }
 
   async function generateCode() {
@@ -92,7 +149,7 @@ export default function AdminPage() {
     bought: items.filter(i => i.status === 'bought').length,
   }
 
-  const pendingUsers = users.filter(u => !u.approved && !u.is_admin)
+  const pendingUsers = users.filter(u => !u.approved && !u.rejected && !u.is_admin)
 
   if (authLoading) return null
 
@@ -266,6 +323,8 @@ export default function AdminPage() {
                           <span className="text-xs text-gray-400">—</span>
                         ) : u.approved ? (
                           <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600">Approved</span>
+                        ) : u.rejected ? (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-500">Rejected</span>
                         ) : (
                           <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-600">Pending</span>
                         )}
@@ -285,12 +344,22 @@ export default function AdminPage() {
                                   Revoke
                                 </button>
                               ) : (
-                                <button
-                                  onClick={() => setApproval(u.id, true)}
-                                  className="text-xs text-green-600 hover:text-green-800 font-medium"
-                                >
-                                  Approve
-                                </button>
+                                <>
+                                  <button
+                                    onClick={() => setApproval(u.id, true)}
+                                    className="text-xs text-green-600 hover:text-green-800 font-medium"
+                                  >
+                                    Approve
+                                  </button>
+                                  {!u.rejected && (
+                                    <button
+                                      onClick={() => rejectUser(u.id)}
+                                      className="text-xs text-red-400 hover:text-red-600"
+                                    >
+                                      Reject
+                                    </button>
+                                  )}
+                                </>
                               )
                             )}
                             <button
@@ -298,6 +367,13 @@ export default function AdminPage() {
                               className="text-xs text-gray-500 hover:text-gray-700"
                             >
                               {u.is_admin ? 'Remove admin' : 'Make admin'}
+                            </button>
+                            <button
+                              onClick={() => deleteUser(u.id)}
+                              className="text-xs text-red-400 hover:text-red-600"
+                              title="Delete user"
+                            >
+                              Delete
                             </button>
                           </div>
                         )}
@@ -332,6 +408,7 @@ export default function AdminPage() {
                     <th className="text-left px-4 py-3 text-xs font-medium text-gray-400">Status</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-gray-400">Used by</th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-gray-400">Created</th>
+                    <th className="text-right px-4 py-3 text-xs font-medium text-gray-400"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -340,7 +417,25 @@ export default function AdminPage() {
                     return (
                       <tr key={c.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                         <td className="px-4 py-3">
-                          <code className="font-mono text-sm tracking-widest text-gray-800">{c.code}</code>
+                          <div className="flex items-center gap-2">
+                            <code className="font-mono text-sm tracking-widest text-gray-800">{c.code}</code>
+                            <button
+                              onClick={() => copyCode(c.id, c.code)}
+                              className="text-gray-400 hover:text-gray-600 transition-colors"
+                              title="Copy code"
+                            >
+                              {copiedId === c.id ? (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              ) : (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                </svg>
+                              )}
+                            </button>
+                          </div>
                         </td>
                         <td className="px-4 py-3">
                           <span className={`text-xs px-2 py-0.5 rounded-full ${c.used ? 'bg-gray-100 text-gray-400' : 'bg-green-50 text-green-600'}`}>
@@ -356,6 +451,15 @@ export default function AdminPage() {
                         </td>
                         <td className="px-4 py-3 text-gray-400 text-xs">
                           {new Date(c.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            onClick={() => deleteCode(c.id)}
+                            className="text-xs text-red-400 hover:text-red-600"
+                            title="Delete code"
+                          >
+                            Delete
+                          </button>
                         </td>
                       </tr>
                     )

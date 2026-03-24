@@ -16,9 +16,9 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-white border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="font-semibold text-lg text-gray-900 tracking-tight">
+    <nav className="bg-white border-b border-gray-200">
+      <div className="max-w-[1400px] mx-auto px-4 py-4 flex items-center justify-between">
+        <Link href="/" className="font-bold text-lg text-gray-900 tracking-tight">
           Needlist
         </Link>
 

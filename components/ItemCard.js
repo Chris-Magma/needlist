@@ -2,19 +2,38 @@
 
 import Link from 'next/link'
 
-function ExternalLinkIcon() {
+function ArrowUpRightIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-      <polyline points="15 3 21 3 21 9" />
-      <line x1="10" y1="14" x2="21" y2="3" />
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="7" y1="17" x2="17" y2="7" />
+      <polyline points="7 7 17 7 17 17" />
+    </svg>
+  )
+}
+
+function EditIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6M14 11v6" />
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
     </svg>
   )
 }
 
 function ImagePlaceholder() {
   return (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#e5e7eb" strokeWidth="1.5">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#e5e5e5" strokeWidth="1.5">
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <circle cx="8.5" cy="8.5" r="1.5" />
       <polyline points="21 15 16 10 5 21" />
@@ -22,106 +41,87 @@ function ImagePlaceholder() {
   )
 }
 
-const STATUS_STYLES = {
-  wishlist: 'bg-blue-50 text-blue-500',
-  bought: 'bg-green-50 text-green-600',
-  archived: 'bg-gray-100 text-gray-400',
-}
-
 export default function ItemCard({ item, showUser = false, onDelete, canEdit }) {
-  const displayStatus = item.custom_status || item.status
-  const statusStyle = STATUS_STYLES[item.status] || 'bg-gray-100 text-gray-500'
-
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col">
-      {/* Image */}
-      <div className="relative bg-white aspect-square flex items-center justify-center">
+    <div
+      className="group relative bg-white flex flex-col rounded-xl overflow-hidden"
+    >
+      {/* Image area */}
+      <div
+        className="relative flex items-center justify-center"
+        style={{ height: '354px', backgroundColor: '#fff' }}
+      >
         {item.image_url ? (
           <img
             src={item.image_url}
             alt={item.name}
-            className="w-full h-full object-contain p-6"
+            className="w-full h-full object-contain"
             onError={(e) => { e.target.style.display = 'none' }}
           />
         ) : (
           <ImagePlaceholder />
         )}
-        {item.product_url && (
-          <a
-            href={item.product_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute top-3 right-3 p-2 bg-white rounded-xl shadow-sm hover:shadow-md text-gray-400 hover:text-gray-700 transition-all"
-            title="View product"
-          >
-            <ExternalLinkIcon />
-          </a>
+
+        {/* Edit/Delete — bottom-right, hover only */}
+        {canEdit && (
+          <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <a
+              href={`/add?id=${item.id}`}
+              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+              style={{ backgroundColor: 'rgb(245,245,245)', color: '#555' }}
+              title="Edit"
+            >
+              <EditIcon />
+            </a>
+            {onDelete && (
+              <button
+                onClick={() => onDelete(item.id)}
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:text-red-500"
+                style={{ backgroundColor: 'rgb(245,245,245)', color: '#555' }}
+                title="Delete"
+              >
+                <TrashIcon />
+              </button>
+            )}
+          </div>
         )}
       </div>
 
-      {/* Content */}
-      <div className="px-4 pb-4 pt-3 flex flex-col gap-1 flex-1">
+      {/* External link — always visible, top-right of card */}
+      {item.product_url && (
+        <button
+          onClick={() => window.open(item.product_url, '_blank')}
+          className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: 'rgb(245,245,245)', color: '#737373' }}
+          title="View product"
+        >
+          <ArrowUpRightIcon />
+        </button>
+      )}
+
+      {/* Details */}
+      <div className="flex flex-col gap-1" style={{ padding: '16px' }}>
         {/* Brand · Category */}
-        <p className="text-xs text-gray-400 truncate">
+        <p className="text-sm truncate" style={{ color: 'rgb(115,115,115)' }}>
           {[item.brand, item.category].filter(Boolean).join(' · ') || '\u00A0'}
         </p>
 
         {/* Name + Price */}
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-medium text-gray-900 text-sm leading-snug line-clamp-2">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-normal truncate" style={{ color: 'rgb(20,20,20)' }}>
             {item.name}
-          </h3>
+          </span>
           {item.price != null && (
-            <span className="text-sm font-semibold text-gray-900 whitespace-nowrap">
+            <span className="text-sm font-normal whitespace-nowrap" style={{ color: 'rgb(20,20,20)' }}>
               ${Number(item.price).toFixed(2)}
             </span>
           )}
         </div>
 
-        {/* Status + User */}
-        <div className="flex items-center gap-2 mt-1 flex-wrap">
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusStyle}`}>
-            {displayStatus}
-          </span>
-          {showUser && item.profiles?.username && (
-            <Link
-              href={`/${item.profiles.username}`}
-              className="text-xs text-gray-400 hover:text-gray-600"
-            >
-              @{item.profiles.username}
-            </Link>
-          )}
-        </div>
-
-        {/* Tags */}
-        {item.tags?.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
-            {item.tags.map(tag => (
-              <span key={tag} className="text-xs bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full border border-gray-100">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Actions */}
-        {canEdit && (
-          <div className="flex gap-2 mt-2 pt-2 border-t border-gray-50">
-            <a
-              href={`/add?id=${item.id}`}
-              className="text-xs text-blue-500 hover:text-blue-700"
-            >
-              Edit
-            </a>
-            {onDelete && (
-              <button
-                onClick={() => onDelete(item.id)}
-                className="text-xs text-red-400 hover:text-red-600"
-              >
-                Delete
-              </button>
-            )}
-          </div>
+        {showUser && item.profiles?.username && (
+          <Link href={`/${item.profiles.username}`} className="text-xs" style={{ color: 'rgb(115,115,115)' }}>
+            @{item.profiles.username}
+          </Link>
         )}
       </div>
     </div>

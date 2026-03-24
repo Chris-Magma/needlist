@@ -14,6 +14,24 @@ export default function PendingGate({ children }) {
   if (!user || !profile) return children
   if (profile.is_admin || profile.approved) return children
 
+  if (profile.rejected) {
+    return (
+      <div className="min-h-[calc(100vh-56px)] bg-[#F2F2F2] flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl shadow-sm p-8 w-full max-w-sm text-center">
+          <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">Access declined</h1>
+          <p className="text-sm text-gray-400">
+            Your access request has been declined.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   // Authenticated but hasn't submitted an invite code yet (e.g. signed up via Google
   // without going through the signup flow, or invite code consumption failed)
   if (!profile.invite_code_used) {

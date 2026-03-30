@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
 function ArrowUpRightIcon() {
@@ -42,6 +43,20 @@ function ImagePlaceholder() {
 }
 
 export default function ItemCard({ item, showUser = false, onDelete, canEdit }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    function handleClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [menuOpen])
+
   return (
     <div
       className="group relative bg-white flex flex-col rounded-xl overflow-hidden"
@@ -55,16 +70,16 @@ export default function ItemCard({ item, showUser = false, onDelete, canEdit }) 
           <img
             src={item.image_url}
             alt={item.name}
-            className="w-full h-full object-contain"
+            style={{ maxWidth: '70%', maxHeight: '70%', objectFit: 'contain' }}
             onError={(e) => { e.target.style.display = 'none' }}
           />
         ) : (
           <ImagePlaceholder />
         )}
 
-        {/* Edit/Delete — bottom-right, hover only */}
+        {/* Edit/Delete — bottom-right, hover only, desktop only */}
         {canEdit && (
-          <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute bottom-2 right-2 hidden md:flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <a
               href={`/add?id=${item.id}`}
               className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
@@ -82,6 +97,37 @@ export default function ItemCard({ item, showUser = false, onDelete, canEdit }) 
               >
                 <TrashIcon />
               </button>
+            )}
+          </div>
+        )}
+
+        {/* ⋮ menu — mobile only */}
+        {canEdit && (
+          <div ref={menuRef} className="absolute bottom-2 right-2 md:hidden">
+            <button
+              onClick={() => setMenuOpen(v => !v)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-base leading-none"
+              style={{ backgroundColor: 'rgb(245,245,245)', color: '#555' }}
+            >
+              ⋮
+            </button>
+            {menuOpen && (
+              <div className="absolute bottom-10 right-0 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-20 min-w-[110px]">
+                <a
+                  href={`/add?id=${item.id}`}
+                  className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <EditIcon /> Edit
+                </a>
+                {onDelete && (
+                  <button
+                    onClick={() => { setMenuOpen(false); onDelete(item.id) }}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-red-500 hover:bg-gray-50"
+                  >
+                    <TrashIcon /> Delete
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}

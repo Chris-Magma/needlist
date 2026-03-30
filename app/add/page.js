@@ -30,6 +30,22 @@ function categoryFromOg(ogType, keywords) {
   return null
 }
 
+function ChevronLeft() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  )
+}
+
+function ChevronRight() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  )
+}
+
 function AddItemForm() {
   const { user, profile, loading: authLoading } = useAuth()
   const router = useRouter()
@@ -54,6 +70,8 @@ function AddItemForm() {
   const [error, setError] = useState('')
   const [ogLoading, setOgLoading] = useState(false)
   const [showMore, setShowMore] = useState(false)
+  const [ogImages, setOgImages] = useState([])
+  const [carouselIndex, setCarouselIndex] = useState(0)
 
   useEffect(() => {
     if (!authLoading && !user) router.push('/login')
@@ -99,10 +117,14 @@ function AddItemForm() {
       const inferredBrand = brandFromUrl(url)
       const inferredCategory = categoryFromOg(data.ogType, data.keywords)
 
+      const images = data.images?.length ? data.images : (data.image ? [data.image] : [])
+      setOgImages(images)
+      setCarouselIndex(0)
+
       setForm(f => ({
         ...f,
         name: f.name || data.title || f.name,
-        image_url: f.image_url || data.image || f.image_url,
+        image_url: f.image_url || images[0] || f.image_url,
         brand: f.brand || inferredBrand || f.brand,
         category: f.category || inferredCategory || f.category,
         price: f.price || (data.price != null ? String(data.price) : f.price),
@@ -112,6 +134,21 @@ function AddItemForm() {
     } finally {
       setOgLoading(false)
     }
+  }
+
+  function selectCarouselImage(index) {
+    setCarouselIndex(index)
+    set('image_url', ogImages[index])
+  }
+
+  function carouselPrev() {
+    const next = (carouselIndex - 1 + ogImages.length) % ogImages.length
+    selectCarouselImage(next)
+  }
+
+  function carouselNext() {
+    const next = (carouselIndex + 1) % ogImages.length
+    selectCarouselImage(next)
   }
 
   async function handleSubmit(e) {
@@ -163,6 +200,44 @@ function AddItemForm() {
             className="w-full h-[200px] object-cover"
             onError={e => e.target.style.display = 'none'}
           />
+        )}
+
+        {/* Image carousel — shown when multiple images returned from OG fetch */}
+        {ogImages.length > 1 && (
+          <div className="flex items-center gap-2 px-4 py-3 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={carouselPrev}
+              className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 flex-shrink-0"
+            >
+              <ChevronLeft />
+            </button>
+            <div className="flex gap-2 overflow-x-auto flex-1 py-1">
+              {ogImages.map((src, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => selectCarouselImage(i)}
+                  className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-colors"
+                  style={{ borderColor: i === carouselIndex ? '#111' : '#e5e7eb' }}
+                >
+                  <img
+                    src={src}
+                    alt={`Option ${i + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={e => { e.target.parentElement.style.display = 'none' }}
+                  />
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={carouselNext}
+              className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 flex-shrink-0"
+            >
+              <ChevronRight />
+            </button>
+          </div>
         )}
 
         <div className="p-8">

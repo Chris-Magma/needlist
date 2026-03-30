@@ -53,7 +53,7 @@ async function fetchAmazon(url) {
     html.match(/src=["']([^"']+)["'][^>]+id=["']landingImage["']/)
   const image = imgMatch ? imgMatch[1] : null
 
-  return { title, image, price, description: null, ogType: null, keywords: null }
+  return { title, image, images: image ? [image] : [], price, description: null, ogType: null, keywords: null }
 }
 
 async function fetchOg(url) {
@@ -83,10 +83,33 @@ async function fetchOg(url) {
   }
 
   const title = getMeta('og:title') || getMetaName('twitter:title') || null
-  const image = getMeta('og:image') || getMetaName('twitter:image') || null
+  const ogImage = getMeta('og:image') || null
+  const twitterImage = getMetaName('twitter:image') || null
+  const image = ogImage || twitterImage || null
   const description = getMeta('og:description') || getMetaName('twitter:description') || null
   const ogType = getMeta('og:type') || null
   const keywords = getMetaName('keywords') || null
+
+  // Collect up to 5 images
+  const images = []
+  if (ogImage) images.push(ogImage)
+  const ogImageSecure = getMeta('og:image:secure_url')
+  if (ogImageSecure && !images.includes(ogImageSecure)) images.push(ogImageSecure)
+  if (twitterImage && !images.includes(twitterImage)) images.push(twitterImage)
+
+  // Large img tags from the page body
+  const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*/gi
+  let imgMatch
+  while ((imgMatch = imgRegex.exec(html)) !== null && images.length < 5) {
+    const src = imgMatch[1]
+    if (!src.startsWith('http') || images.includes(src)) continue
+    const fullTag = imgMatch[0]
+    const wMatch = fullTag.match(/width=["']?(\d+)["']?/i)
+    const hMatch = fullTag.match(/height=["']?(\d+)["']?/i)
+    if (wMatch && parseInt(wMatch[1]) < 200) continue
+    if (hMatch && parseInt(hMatch[1]) < 200) continue
+    images.push(src)
+  }
 
   // Price: 1. meta tags
   let price = null
@@ -121,5 +144,5 @@ async function fetchOg(url) {
     }
   }
 
-  return { title, image, description, ogType, keywords, price }
+  return { title, image, images: images.slice(0, 5), description, ogType, keywords, price }
 }

@@ -30,20 +30,8 @@ function categoryFromOg(ogType, keywords) {
   return null
 }
 
-function ChevronLeft() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="15 18 9 12 15 6" />
-    </svg>
-  )
-}
-
-function ChevronRight() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  )
+function MI({ name, size = 18 }) {
+  return <span className="material-icons-outlined" style={{ fontSize: size }}>{name}</span>
 }
 
 function AddItemForm() {
@@ -52,13 +40,12 @@ function AddItemForm() {
   const searchParams = useSearchParams()
   const editId = searchParams.get('id')
 
-  const currencySymbol = profile?.currency_preference === 'USD' ? '$' : '€'
-
   const [form, setForm] = useState({
     name: '',
     brand: '',
     category: '',
     price: '',
+    price_currency: 'EUR',
     image_url: '',
     product_url: '',
     status: 'wishlist',
@@ -66,6 +53,13 @@ function AddItemForm() {
     tags: '',
     is_private: false,
   })
+
+  // Sync price_currency default from profile once loaded
+  useEffect(() => {
+    if (profile?.currency && !editId) {
+      set('price_currency', profile.currency)
+    }
+  }, [profile?.currency])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [ogLoading, setOgLoading] = useState(false)
@@ -89,6 +83,7 @@ function AddItemForm() {
         brand: data.brand || '',
         category: data.category || '',
         price: data.price?.toString() || '',
+        price_currency: data.price_currency || 'EUR',
         image_url: data.image_url || '',
         product_url: data.product_url || '',
         status: data.status || 'wishlist',
@@ -161,6 +156,7 @@ function AddItemForm() {
       brand: form.brand.trim() || null,
       category: form.category.trim() || null,
       price: form.price ? parseFloat(form.price) : null,
+      price_currency: form.price_currency,
       image_url: form.image_url.trim() || null,
       product_url: form.product_url.trim() || null,
       status: form.status,
@@ -210,7 +206,7 @@ function AddItemForm() {
               onClick={carouselPrev}
               className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 flex-shrink-0"
             >
-              <ChevronLeft />
+              <MI name="chevron_left" />
             </button>
             <div className="flex gap-2 overflow-x-auto flex-1 py-1">
               {ogImages.map((src, i) => (
@@ -235,7 +231,7 @@ function AddItemForm() {
               onClick={carouselNext}
               className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 flex-shrink-0"
             >
-              <ChevronRight />
+              <MI name="chevron_right" />
             </button>
           </div>
         )}
@@ -318,8 +314,7 @@ function AddItemForm() {
             {/* Price */}
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Price</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{currencySymbol}</span>
+              <div className="flex gap-2">
                 <input
                   type="number"
                   step="0.01"
@@ -327,8 +322,16 @@ function AddItemForm() {
                   value={form.price}
                   onChange={e => set('price', e.target.value)}
                   placeholder="0.00"
-                  className="w-full border border-gray-200 rounded-xl pl-7 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
                 />
+                <select
+                  value={form.price_currency}
+                  onChange={e => set('price_currency', e.target.value)}
+                  className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-300"
+                >
+                  <option value="EUR">EUR</option>
+                  <option value="USD">USD</option>
+                </select>
               </div>
             </div>
 

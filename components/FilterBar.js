@@ -8,7 +8,7 @@ const SORT_LABELS = {
   name: 'Name A–Z',
 }
 
-export default function FilterBar({ categories = [], users = [], statuses = [], filters, setFilters }) {
+export default function FilterBar({ categories = [], users = [], statuses = [], filters, setFilters, batchMode = false, onBatchToggle }) {
   return (
     <div className="bg-[#F2F2F2] border-b border-gray-200 sticky top-0 z-10">
       <div className="max-w-[1400px] mx-auto px-4 py-3 flex items-center justify-between gap-4">
@@ -44,9 +44,7 @@ export default function FilterBar({ categories = [], users = [], statuses = [], 
                   <option key={s} value={s}>{s === 'All' ? 'All statuses' : s}</option>
                 ))}
               </select>
-              <svg className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
+              <span className="material-icons-outlined pointer-events-none absolute right-0 top-1/2 -translate-y-1/2" style={{ fontSize: 16, color: '#999', lineHeight: 1 }}>expand_more</span>
             </div>
           )}
 
@@ -62,9 +60,7 @@ export default function FilterBar({ categories = [], users = [], statuses = [], 
                   <option key={u} value={u}>{u === 'All' ? 'All users' : `@${u}`}</option>
                 ))}
               </select>
-              <svg className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
+              <span className="material-icons-outlined pointer-events-none absolute right-0 top-1/2 -translate-y-1/2" style={{ fontSize: 16, color: '#999', lineHeight: 1 }}>expand_more</span>
             </div>
           )}
 
@@ -83,10 +79,18 @@ export default function FilterBar({ categories = [], users = [], statuses = [], 
               <option value="price-desc">Price ↓</option>
               <option value="name">Name A–Z</option>
             </select>
-            <svg className="pointer-events-none inline-block ml-1" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
+            <span className="material-icons-outlined pointer-events-none inline-block ml-1 align-middle" style={{ fontSize: 16, color: '#999', lineHeight: 1 }}>expand_more</span>
           </div>
+
+          {onBatchToggle && (
+            <button
+              onClick={onBatchToggle}
+              className="text-sm ml-1 transition-colors"
+              style={{ color: batchMode ? '#111' : '#888' }}
+            >
+              {batchMode ? 'Done' : 'Select'}
+            </button>
+          )}
         </div>
       </div>
     </div>

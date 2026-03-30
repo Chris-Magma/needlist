@@ -2,35 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-
-function ArrowUpRightIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="7" y1="17" x2="17" y2="7" />
-      <polyline points="7 7 17 7 17 17" />
-    </svg>
-  )
-}
-
-function EditIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-    </svg>
-  )
-}
-
-function TrashIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-      <path d="M10 11v6M14 11v6" />
-      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-    </svg>
-  )
-}
+import { useAuth } from '@/lib/auth-context'
+import { formatPrice } from '@/lib/utils'
+import { convertPrice } from '@/lib/fx'
 
 function ImagePlaceholder() {
   return (
@@ -42,9 +16,28 @@ function ImagePlaceholder() {
   )
 }
 
-export default function ItemCard({ item, showUser = false, onDelete, canEdit }) {
+function MI({ name, size = 18 }) {
+  return <span className="material-icons-outlined" style={{ fontSize: size }}>{name}</span>
+}
+
+export default function ItemCard({ item, showUser = false, onDelete, canEdit, batchMode = false, selected = false, onSelect }) {
+  const { profile } = useAuth()
+  const userCurrency = profile?.currency ?? 'EUR'
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
+  const [displayPrice, setDisplayPrice] = useState(null)
+
+  useEffect(() => {
+    if (item.price == null) return
+    const itemCurrency = item.price_currency ?? 'EUR'
+    if (itemCurrency === userCurrency) {
+      setDisplayPrice(formatPrice(item.price, userCurrency))
+      return
+    }
+    convertPrice(item.price, itemCurrency, userCurrency).then(converted => {
+      setDisplayPrice(formatPrice(converted, userCurrency))
+    })
+  }, [item.price, item.price_currency, userCurrency])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -66,6 +59,20 @@ export default function ItemCard({ item, showUser = false, onDelete, canEdit }) 
         className="relative flex items-center justify-center"
         style={{ height: '354px', backgroundColor: '#fff' }}
       >
+        {/* Batch select checkbox — top-left, only in batch mode for editable items */}
+        {batchMode && canEdit && (
+          <button
+            onClick={e => { e.stopPropagation(); onSelect?.() }}
+            className="absolute top-3 left-3 z-10 w-6 h-6 rounded-full flex items-center justify-center transition-colors"
+            style={selected
+              ? { backgroundColor: '#111', border: '2px solid #111' }
+              : { backgroundColor: 'rgba(255,255,255,0.9)', border: '2px solid #ccc' }
+            }
+          >
+            {selected && <span className="material-icons-sharp text-white" style={{ fontSize: 14, lineHeight: 1 }}>check</span>}
+          </button>
+        )}
+
         {item.image_url ? (
           <img
             src={item.image_url}
@@ -86,7 +93,7 @@ export default function ItemCard({ item, showUser = false, onDelete, canEdit }) 
               style={{ backgroundColor: 'rgb(245,245,245)', color: '#555' }}
               title="Edit"
             >
-              <EditIcon />
+              <MI name="edit" />
             </a>
             {onDelete && (
               <button
@@ -95,7 +102,7 @@ export default function ItemCard({ item, showUser = false, onDelete, canEdit }) 
                 style={{ backgroundColor: 'rgb(245,245,245)', color: '#555' }}
                 title="Delete"
               >
-                <TrashIcon />
+                <MI name="delete" />
               </button>
             )}
           </div>
@@ -106,10 +113,10 @@ export default function ItemCard({ item, showUser = false, onDelete, canEdit }) 
           <div ref={menuRef} className="absolute bottom-2 right-2 md:hidden">
             <button
               onClick={() => setMenuOpen(v => !v)}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-base leading-none"
+              className="w-8 h-8 rounded-full flex items-center justify-center"
               style={{ backgroundColor: 'rgb(245,245,245)', color: '#555' }}
             >
-              ⋮
+              <MI name="more_vert" />
             </button>
             {menuOpen && (
               <div className="absolute bottom-10 right-0 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-20 min-w-[110px]">
@@ -117,14 +124,14 @@ export default function ItemCard({ item, showUser = false, onDelete, canEdit }) 
                   href={`/add?id=${item.id}`}
                   className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                 >
-                  <EditIcon /> Edit
+                  <MI name="edit" size={16} /> Edit
                 </a>
                 {onDelete && (
                   <button
                     onClick={() => { setMenuOpen(false); onDelete(item.id) }}
                     className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-red-500 hover:bg-gray-50"
                   >
-                    <TrashIcon /> Delete
+                    <MI name="delete" size={16} /> Delete
                   </button>
                 )}
               </div>
@@ -141,7 +148,7 @@ export default function ItemCard({ item, showUser = false, onDelete, canEdit }) 
           style={{ backgroundColor: 'rgb(245,245,245)', color: '#737373' }}
           title="View product"
         >
-          <ArrowUpRightIcon />
+          <span className="material-icons-sharp" style={{ fontSize: 18 }}>arrow_outward</span>
         </button>
       )}
 
@@ -157,9 +164,9 @@ export default function ItemCard({ item, showUser = false, onDelete, canEdit }) 
           <span className="text-sm font-normal truncate" style={{ color: 'rgb(20,20,20)' }}>
             {item.name}
           </span>
-          {item.price != null && (
+          {item.price != null && displayPrice && (
             <span className="text-sm font-normal whitespace-nowrap" style={{ color: 'rgb(20,20,20)' }}>
-              ${Number(item.price).toFixed(2)}
+              {displayPrice}
             </span>
           )}
         </div>

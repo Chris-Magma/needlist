@@ -91,7 +91,7 @@ export default function ItemCard({ item, showUser = false, onDelete, canEdit }) 
             {onDelete && (
               <button
                 onClick={() => onDelete(item.id)}
-                className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:text-red-500"
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:text-red-500 cursor-pointer"
                 style={{ backgroundColor: 'rgb(245,245,245)', color: '#555' }}
                 title="Delete"
               >
@@ -137,7 +137,7 @@ export default function ItemCard({ item, showUser = false, onDelete, canEdit }) 
       {item.product_url && (
         <button
           onClick={() => window.open(item.product_url, '_blank')}
-          className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center"
+          className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer"
           style={{ backgroundColor: 'rgb(245,245,245)', color: '#737373' }}
           title="View product"
         >

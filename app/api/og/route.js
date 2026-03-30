@@ -1,27 +1,36 @@
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET',
+}
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS_HEADERS })
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const url = searchParams.get('url')
 
   if (!url) {
-    return Response.json({ error: 'Missing url' }, { status: 400 })
+    return Response.json({ error: 'Missing url' }, { status: 400, headers: CORS_HEADERS })
   }
 
   try {
     new URL(url) // validate
   } catch {
-    return Response.json({ error: 'Invalid url' }, { status: 400 })
+    return Response.json({ error: 'Invalid url' }, { status: 400, headers: CORS_HEADERS })
   }
 
   const isAmazon = /amazon\./i.test(new URL(url).hostname)
 
   try {
     if (isAmazon) {
-      return Response.json(await fetchAmazon(url))
+      return Response.json(await fetchAmazon(url), { headers: CORS_HEADERS })
     } else {
-      return Response.json(await fetchOg(url))
+      return Response.json(await fetchOg(url), { headers: CORS_HEADERS })
     }
   } catch {
-    return Response.json({ error: 'Failed to fetch page' }, { status: 502 })
+    return Response.json({ error: 'Failed to fetch page' }, { status: 502, headers: CORS_HEADERS })
   }
 }
 

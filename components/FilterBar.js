@@ -13,7 +13,7 @@ export default function FilterBar({ categories = [], users = [], statuses = [], 
     <div className="bg-[#F2F2F2] border-b border-gray-200 sticky top-0 z-10">
       <div className="max-w-[1400px] mx-auto px-4 py-3 flex items-center justify-between gap-4">
         {/* Category pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide flex-1 min-w-0">
           {categories.map(cat => (
             <button
               key={cat}
@@ -65,9 +65,10 @@ export default function FilterBar({ categories = [], users = [], statuses = [], 
           )}
 
           <div className="relative">
-            <span className="text-sm pointer-events-none" style={{ color: '#555' }}>
+            <span className="text-sm pointer-events-none hidden sm:inline" style={{ color: '#555' }}>
               Sort: {SORT_LABELS[filters.sort]}
             </span>
+            <span className="material-icons-outlined pointer-events-none sm:hidden" style={{ fontSize: 20, color: '#555' }}>sort</span>
             <select
               value={filters.sort}
               onChange={e => setFilters(f => ({ ...f, sort: e.target.value }))}
@@ -79,7 +80,7 @@ export default function FilterBar({ categories = [], users = [], statuses = [], 
               <option value="price-desc">Price ↓</option>
               <option value="name">Name A–Z</option>
             </select>
-            <span className="material-icons-outlined pointer-events-none inline-block ml-1 align-middle" style={{ fontSize: 16, color: '#999', lineHeight: 1 }}>expand_more</span>
+            <span className="material-icons-outlined pointer-events-none inline-block ml-1 align-middle hidden sm:inline-block" style={{ fontSize: 16, color: '#999', lineHeight: 1 }}>expand_more</span>
           </div>
 
           {onBatchToggle && (

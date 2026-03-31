@@ -258,7 +258,7 @@ function AddItemForm() {
                   fetchOgData(pasted)
                 }}
                 placeholder="https://..."
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-gray-300"
               />
             </div>
 
@@ -270,7 +270,7 @@ function AddItemForm() {
                 value={form.image_url}
                 onChange={e => set('image_url', e.target.value)}
                 placeholder="https://..."
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-gray-300"
               />
             </div>
 
@@ -283,7 +283,7 @@ function AddItemForm() {
                 onChange={e => set('name', e.target.value)}
                 required
                 placeholder="e.g. AirPods Pro"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-gray-300"
               />
             </div>
 
@@ -296,7 +296,7 @@ function AddItemForm() {
                   value={form.brand}
                   onChange={e => set('brand', e.target.value)}
                   placeholder="e.g. Apple"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-gray-300"
                 />
               </div>
               <div>
@@ -306,7 +306,7 @@ function AddItemForm() {
                   value={form.category}
                   onChange={e => set('category', e.target.value)}
                   placeholder="e.g. Audio"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-gray-300"
                 />
               </div>
             </div>
@@ -322,7 +322,7 @@ function AddItemForm() {
                   value={form.price}
                   onChange={e => set('price', e.target.value)}
                   placeholder="0.00"
-                  className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-gray-300"
                 />
                 <select
                   value={form.price_currency}
@@ -368,7 +368,7 @@ function AddItemForm() {
                       value={form.custom_status}
                       onChange={e => set('custom_status', e.target.value)}
                       placeholder="e.g. Considering..."
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-gray-300"
                     />
                   </div>
                 </div>
@@ -381,7 +381,7 @@ function AddItemForm() {
                     value={form.tags}
                     onChange={e => set('tags', e.target.value)}
                     placeholder="e.g. tech, gift, summer"
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-gray-300"
                   />
                 </div>
 

@@ -38,8 +38,8 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-white border-b border-gray-200">
-      <div className="max-w-[1400px] mx-auto px-4 py-4 flex items-center justify-between">
+    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="max-w-[1400px] mx-auto px-4 py-3 sm:py-4 flex items-center justify-between gap-2">
         <Link href="/" style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', letterSpacing: '0.08em' }}>
           NEEDLIST
         </Link>
@@ -88,7 +88,7 @@ export default function Navbar() {
 
                 <button
                   onClick={handleSignOut}
-                  className="text-sm text-gray-400 hover:text-gray-600"
+                  className="text-sm text-gray-400 hover:text-gray-600 hidden sm:block"
                 >
                   Sign out
                 </button>

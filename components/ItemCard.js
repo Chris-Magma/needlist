@@ -56,8 +56,8 @@ export default function ItemCard({ item, showUser = false, onDelete, canEdit, ba
     >
       {/* Image area */}
       <div
-        className="relative flex items-center justify-center"
-        style={{ height: '354px', backgroundColor: '#fff' }}
+        className="relative flex items-center justify-center h-[240px] md:h-[354px]"
+        style={{ backgroundColor: '#fff' }}
       >
         {/* Batch select checkbox — top-left, only in batch mode for editable items */}
         {batchMode && canEdit && (
@@ -161,7 +161,7 @@ export default function ItemCard({ item, showUser = false, onDelete, canEdit, ba
 
         {/* Name + Price */}
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-normal truncate" style={{ color: 'rgb(20,20,20)' }}>
+          <span className="text-sm font-normal line-clamp-2" style={{ color: 'rgb(20,20,20)' }}>
             {item.name}
           </span>
           {item.price != null && displayPrice && (
